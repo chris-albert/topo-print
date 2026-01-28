@@ -3,19 +3,21 @@ interface ElevationResponse {
 }
 
 const MAX_RETRIES = 3;
+const API_URL = 'https://api.open-meteo.com/v1/elevation';
 
 async function fetchWithRetry(
   url: string,
+  init: RequestInit,
   signal?: AbortSignal,
   attempt = 0,
 ): Promise<Response> {
-  const response = await fetch(url, { signal });
+  const response = await fetch(url, { ...init, signal });
 
   if (response.status === 429 && attempt < MAX_RETRIES) {
     // Exponential backoff: 2s, 4s, 8s
     const delay = 2000 * Math.pow(2, attempt);
     await new Promise((resolve) => setTimeout(resolve, delay));
-    return fetchWithRetry(url, signal, attempt + 1);
+    return fetchWithRetry(url, init, signal, attempt + 1);
   }
 
   return response;
@@ -26,11 +28,16 @@ export async function fetchElevations(
   longitudes: number[],
   signal?: AbortSignal,
 ): Promise<number[]> {
-  const url = new URL('https://api.open-meteo.com/v1/elevation');
-  url.searchParams.set('latitude', latitudes.join(','));
-  url.searchParams.set('longitude', longitudes.join(','));
+  // Use POST to avoid URL length limits
+  const body = new URLSearchParams();
+  body.set('latitude', latitudes.join(','));
+  body.set('longitude', longitudes.join(','));
 
-  const response = await fetchWithRetry(url.toString(), signal);
+  const response = await fetchWithRetry(API_URL, {
+    method: 'POST',
+    body,
+  }, signal);
+
   if (!response.ok) {
     throw new Error(`Elevation API error: ${response.status} ${response.statusText}`);
   }
@@ -66,9 +73,9 @@ export async function fetchElevationGrid(
   }
 
   const totalPoints = latitudes.length;
-  // 100 coords per batch keeps URL safely under server limits
-  // (each coord ~10 chars × 100 × 2 params ≈ 2KB)
-  const batchSize = 100;
+  // POST body has no URL length limit, so we can use large batches.
+  // 1000 coords per batch = only 3 requests for a 50x50 grid.
+  const batchSize = 1000;
   const allElevations: number[] = [];
 
   for (let i = 0; i < totalPoints; i += batchSize) {
