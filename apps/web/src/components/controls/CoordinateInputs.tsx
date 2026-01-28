@@ -17,7 +17,7 @@ export function CoordinateInputs({ bounds, onBoundsChange }: CoordinateInputsPro
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
       <div>
-        <label className="block text-xs font-medium text-gray-500 mb-1">North</label>
+        <label className="block text-xs font-medium text-slate-400 mb-1">North</label>
         <input
           type="number"
           step="0.001"
@@ -26,11 +26,11 @@ export function CoordinateInputs({ bounds, onBoundsChange }: CoordinateInputsPro
           value={bounds?.north.toFixed(4) ?? ''}
           onChange={(e) => handleChange('north', e.target.value)}
           placeholder="Latitude"
-          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+          className="w-full px-3 py-2 text-sm bg-slate-800 border border-slate-700 text-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none placeholder-slate-500"
         />
       </div>
       <div>
-        <label className="block text-xs font-medium text-gray-500 mb-1">South</label>
+        <label className="block text-xs font-medium text-slate-400 mb-1">South</label>
         <input
           type="number"
           step="0.001"
@@ -39,11 +39,11 @@ export function CoordinateInputs({ bounds, onBoundsChange }: CoordinateInputsPro
           value={bounds?.south.toFixed(4) ?? ''}
           onChange={(e) => handleChange('south', e.target.value)}
           placeholder="Latitude"
-          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+          className="w-full px-3 py-2 text-sm bg-slate-800 border border-slate-700 text-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none placeholder-slate-500"
         />
       </div>
       <div>
-        <label className="block text-xs font-medium text-gray-500 mb-1">East</label>
+        <label className="block text-xs font-medium text-slate-400 mb-1">East</label>
         <input
           type="number"
           step="0.001"
@@ -52,11 +52,11 @@ export function CoordinateInputs({ bounds, onBoundsChange }: CoordinateInputsPro
           value={bounds?.east.toFixed(4) ?? ''}
           onChange={(e) => handleChange('east', e.target.value)}
           placeholder="Longitude"
-          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+          className="w-full px-3 py-2 text-sm bg-slate-800 border border-slate-700 text-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none placeholder-slate-500"
         />
       </div>
       <div>
-        <label className="block text-xs font-medium text-gray-500 mb-1">West</label>
+        <label className="block text-xs font-medium text-slate-400 mb-1">West</label>
         <input
           type="number"
           step="0.001"
@@ -65,7 +65,7 @@ export function CoordinateInputs({ bounds, onBoundsChange }: CoordinateInputsPro
           value={bounds?.west.toFixed(4) ?? ''}
           onChange={(e) => handleChange('west', e.target.value)}
           placeholder="Longitude"
-          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+          className="w-full px-3 py-2 text-sm bg-slate-800 border border-slate-700 text-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none placeholder-slate-500"
         />
       </div>
     </div>

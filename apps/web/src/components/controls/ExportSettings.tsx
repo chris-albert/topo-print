@@ -24,8 +24,8 @@ export function ExportSettings({
       {/* Grid Resolution */}
       <div>
         <div className="flex justify-between items-center mb-1">
-          <label className="text-sm font-medium text-gray-700">Grid Resolution</label>
-          <span className="text-sm text-gray-500">{gridSize} x {gridSize}</span>
+          <label className="text-sm font-medium text-slate-300">Grid Resolution</label>
+          <span className="text-sm text-slate-400">{gridSize} x {gridSize}</span>
         </div>
         <input
           type="range"
@@ -36,7 +36,7 @@ export function ExportSettings({
           onChange={(e) => onGridSizeChange(Number(e.target.value))}
           className="w-full accent-primary-600"
         />
-        <div className="flex justify-between text-xs text-gray-400 mt-1">
+        <div className="flex justify-between text-xs text-slate-500 mt-1">
           <span>Low (10)</span>
           <span>High (100)</span>
         </div>
@@ -45,8 +45,8 @@ export function ExportSettings({
       {/* Model Width */}
       <div>
         <div className="flex justify-between items-center mb-1">
-          <label className="text-sm font-medium text-gray-700">Model Width</label>
-          <span className="text-sm text-gray-500">{modelWidth}mm</span>
+          <label className="text-sm font-medium text-slate-300">Model Width</label>
+          <span className="text-sm text-slate-400">{modelWidth}mm</span>
         </div>
         <input
           type="range"
@@ -57,7 +57,7 @@ export function ExportSettings({
           onChange={(e) => onModelWidthChange(Number(e.target.value))}
           className="w-full accent-primary-600"
         />
-        <div className="flex justify-between text-xs text-gray-400 mt-1">
+        <div className="flex justify-between text-xs text-slate-500 mt-1">
           <span>50mm</span>
           <span>300mm</span>
         </div>
@@ -66,8 +66,8 @@ export function ExportSettings({
       {/* Vertical Scale */}
       <div>
         <div className="flex justify-between items-center mb-1">
-          <label className="text-sm font-medium text-gray-700">Vertical Exaggeration</label>
-          <span className="text-sm text-gray-500">{verticalScale.toFixed(1)}x</span>
+          <label className="text-sm font-medium text-slate-300">Vertical Exaggeration</label>
+          <span className="text-sm text-slate-400">{verticalScale.toFixed(1)}x</span>
         </div>
         <input
           type="range"
@@ -78,7 +78,7 @@ export function ExportSettings({
           onChange={(e) => onVerticalScaleChange(Number(e.target.value))}
           className="w-full accent-primary-600"
         />
-        <div className="flex justify-between text-xs text-gray-400 mt-1">
+        <div className="flex justify-between text-xs text-slate-500 mt-1">
           <span>0.5x</span>
           <span>5.0x</span>
         </div>
@@ -87,8 +87,8 @@ export function ExportSettings({
       {/* Base Height */}
       <div>
         <div className="flex justify-between items-center mb-1">
-          <label className="text-sm font-medium text-gray-700">Base Height</label>
-          <span className="text-sm text-gray-500">{baseHeight}mm</span>
+          <label className="text-sm font-medium text-slate-300">Base Height</label>
+          <span className="text-sm text-slate-400">{baseHeight}mm</span>
         </div>
         <input
           type="range"
@@ -99,7 +99,7 @@ export function ExportSettings({
           onChange={(e) => onBaseHeightChange(Number(e.target.value))}
           className="w-full accent-primary-600"
         />
-        <div className="flex justify-between text-xs text-gray-400 mt-1">
+        <div className="flex justify-between text-xs text-slate-500 mt-1">
           <span>1mm</span>
           <span>10mm</span>
         </div>
