@@ -12,8 +12,8 @@ async function fetchWithRetry(
   const response = await fetch(url, { signal });
 
   if (response.status === 429 && attempt < MAX_RETRIES) {
-    // Exponential backoff: 1s, 2s, 4s
-    const delay = 1000 * Math.pow(2, attempt);
+    // Exponential backoff: 2s, 4s, 8s
+    const delay = 2000 * Math.pow(2, attempt);
     await new Promise((resolve) => setTimeout(resolve, delay));
     return fetchWithRetry(url, signal, attempt + 1);
   }
@@ -79,9 +79,9 @@ export async function fetchElevationGrid(
 
     onProgress?.(Math.min(100, ((i + batchSize) / totalPoints) * 100));
 
-    // Delay between batches to avoid rate limits
+    // Delay between batches to avoid rate limits (600 req/min free tier)
     if (i + batchSize < totalPoints) {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
     }
   }
 
