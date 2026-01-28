@@ -6,9 +6,18 @@ import type { Bounds } from '../../routes/index';
 interface SelectionRectangleProps {
   bounds: Bounds | null;
   onBoundsChange: (bounds: Bounds) => void;
+  drawMode: boolean;
+  onDrawComplete: () => void;
 }
 
-export function SelectionRectangle({ bounds, onBoundsChange }: SelectionRectangleProps) {
+const RECT_STYLE = {
+  color: '#2563eb',
+  weight: 2,
+  fillOpacity: 0.15,
+  fillColor: '#3b82f6',
+};
+
+export function SelectionRectangle({ bounds, onBoundsChange, drawMode, onDrawComplete }: SelectionRectangleProps) {
   const [drawing, setDrawing] = useState(false);
   const startPoint = useRef<L.LatLng | null>(null);
   const rectangleRef = useRef<L.Rectangle | null>(null);
@@ -16,29 +25,24 @@ export function SelectionRectangle({ bounds, onBoundsChange }: SelectionRectangl
 
   const map = useMapEvents({
     mousedown(e) {
-      if (e.originalEvent.shiftKey) {
-        map.dragging.disable();
-        setDrawing(true);
-        startPoint.current = e.latlng;
+      if (!drawMode) return;
+      map.dragging.disable();
+      setDrawing(true);
+      startPoint.current = e.latlng;
 
-        if (rectangleRef.current) {
-          rectangleRef.current.remove();
-        }
+      if (rectangleRef.current) {
+        rectangleRef.current.remove();
+        rectangleRef.current = null;
       }
     },
     mousemove(e) {
       if (drawing && startPoint.current) {
-        const bounds = L.latLngBounds(startPoint.current, e.latlng);
+        const b = L.latLngBounds(startPoint.current, e.latlng);
 
         if (rectangleRef.current) {
-          rectangleRef.current.setBounds(bounds);
+          rectangleRef.current.setBounds(b);
         } else {
-          rectangleRef.current = L.rectangle(bounds, {
-            color: '#2563eb',
-            weight: 2,
-            fillOpacity: 0.15,
-            fillColor: '#3b82f6',
-          }).addTo(map);
+          rectangleRef.current = L.rectangle(b, RECT_STYLE).addTo(map);
         }
       }
     },
@@ -56,11 +60,27 @@ export function SelectionRectangle({ bounds, onBoundsChange }: SelectionRectangl
         });
 
         startPoint.current = null;
+        onDrawComplete();
       }
     },
   });
 
   mapRef.current = map;
+
+  // Toggle cursor style and dragging based on drawMode
+  useEffect(() => {
+    const container = map.getContainer();
+    if (drawMode) {
+      container.style.cursor = 'crosshair';
+      map.dragging.disable();
+    } else {
+      container.style.cursor = '';
+      map.dragging.enable();
+    }
+    return () => {
+      container.style.cursor = '';
+    };
+  }, [drawMode, map]);
 
   // Sync rectangle when bounds change externally (e.g., from coordinate inputs)
   useEffect(() => {
@@ -75,12 +95,7 @@ export function SelectionRectangle({ bounds, onBoundsChange }: SelectionRectangl
       if (rectangleRef.current) {
         rectangleRef.current.setBounds(latLngBounds);
       } else {
-        rectangleRef.current = L.rectangle(latLngBounds, {
-          color: '#2563eb',
-          weight: 2,
-          fillOpacity: 0.15,
-          fillColor: '#3b82f6',
-        }).addTo(mapRef.current);
+        rectangleRef.current = L.rectangle(latLngBounds, RECT_STYLE).addTo(mapRef.current);
       }
     }
   }, [bounds]);

@@ -6,9 +6,11 @@ import type { Bounds } from '../../routes/index';
 interface MapViewProps {
   bounds: Bounds | null;
   onBoundsChange: (bounds: Bounds | null) => void;
+  drawMode: boolean;
+  onDrawComplete: () => void;
 }
 
-export function MapView({ bounds, onBoundsChange }: MapViewProps) {
+export function MapView({ bounds, onBoundsChange, drawMode, onDrawComplete }: MapViewProps) {
   return (
     <MapContainer
       center={[36.1, -112.1]}
@@ -21,7 +23,12 @@ export function MapView({ bounds, onBoundsChange }: MapViewProps) {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <SearchControl />
-      <SelectionRectangle bounds={bounds} onBoundsChange={onBoundsChange} />
+      <SelectionRectangle
+        bounds={bounds}
+        onBoundsChange={onBoundsChange}
+        drawMode={drawMode}
+        onDrawComplete={onDrawComplete}
+      />
     </MapContainer>
   );
 }

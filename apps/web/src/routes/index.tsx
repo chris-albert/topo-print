@@ -20,6 +20,7 @@ export const Route = createFileRoute('/')({
 
 function HomePage() {
   const [bounds, setBounds] = useState<Bounds | null>(null);
+  const [drawMode, setDrawMode] = useState(false);
   const [gridSize, setGridSize] = useState(50);
   const [modelWidth, setModelWidth] = useState(100);
   const [verticalScale, setVerticalScale] = useState(1.5);
@@ -52,14 +53,34 @@ function HomePage() {
       {/* Left Column - Map */}
       <div className="flex-1 min-w-0">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="p-4 border-b border-gray-100">
-            <h2 className="text-lg font-semibold text-gray-900">Select Region</h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Search for a location and draw a rectangle to select the terrain area
-            </p>
+          <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">Select Region</h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Search for a location, then click "Draw Selection" and drag on the map
+              </p>
+            </div>
+            <button
+              onClick={() => setDrawMode(!drawMode)}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-2 shrink-0 ${
+                drawMode
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+              </svg>
+              {drawMode ? 'Drawing...' : 'Draw Selection'}
+            </button>
           </div>
           <div className="h-[500px] lg:h-[600px]">
-            <MapView bounds={bounds} onBoundsChange={setBounds} />
+            <MapView
+              bounds={bounds}
+              onBoundsChange={setBounds}
+              drawMode={drawMode}
+              onDrawComplete={() => setDrawMode(false)}
+            />
           </div>
           <div className="p-4 border-t border-gray-100">
             <CoordinateInputs bounds={bounds} onBoundsChange={setBounds} />
@@ -132,7 +153,7 @@ function HomePage() {
 
         {!bounds && (
           <div className="bg-blue-50 border border-blue-200 text-blue-700 rounded-lg p-3 text-sm">
-            Draw a rectangle on the map or enter coordinates to get started.
+            Click "Draw Selection" above the map, then drag to select an area. Or enter coordinates manually.
           </div>
         )}
       </div>
