@@ -59,14 +59,16 @@ export async function fetchElevationGrid(
     for (let c = 0; c < gridSize; c++) {
       const lat = bounds.north - (r / (gridSize - 1)) * (bounds.north - bounds.south);
       const lng = bounds.west + (c / (gridSize - 1)) * (bounds.east - bounds.west);
-      latitudes.push(lat);
-      longitudes.push(lng);
+      // Round to 4 decimal places (~11m precision, plenty for 90m DEM)
+      latitudes.push(Math.round(lat * 10000) / 10000);
+      longitudes.push(Math.round(lng * 10000) / 10000);
     }
   }
 
   const totalPoints = latitudes.length;
-  // ~200 coords per param keeps URL under typical 8KB server limits
-  const batchSize = 200;
+  // 100 coords per batch keeps URL safely under server limits
+  // (each coord ~10 chars × 100 × 2 params ≈ 2KB)
+  const batchSize = 100;
   const allElevations: number[] = [];
 
   for (let i = 0; i < totalPoints; i += batchSize) {
