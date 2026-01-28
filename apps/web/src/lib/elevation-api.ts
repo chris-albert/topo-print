@@ -65,7 +65,8 @@ export async function fetchElevationGrid(
   }
 
   const totalPoints = latitudes.length;
-  const batchSize = 1000;
+  // ~200 coords per param keeps URL under typical 8KB server limits
+  const batchSize = 200;
   const allElevations: number[] = [];
 
   for (let i = 0; i < totalPoints; i += batchSize) {
