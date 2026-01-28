@@ -2,6 +2,25 @@ interface ElevationResponse {
   elevation: number[];
 }
 
+const MAX_RETRIES = 3;
+
+async function fetchWithRetry(
+  url: string,
+  signal?: AbortSignal,
+  attempt = 0,
+): Promise<Response> {
+  const response = await fetch(url, { signal });
+
+  if (response.status === 429 && attempt < MAX_RETRIES) {
+    // Exponential backoff: 1s, 2s, 4s
+    const delay = 1000 * Math.pow(2, attempt);
+    await new Promise((resolve) => setTimeout(resolve, delay));
+    return fetchWithRetry(url, signal, attempt + 1);
+  }
+
+  return response;
+}
+
 export async function fetchElevations(
   latitudes: number[],
   longitudes: number[],
@@ -11,7 +30,7 @@ export async function fetchElevations(
   url.searchParams.set('latitude', latitudes.join(','));
   url.searchParams.set('longitude', longitudes.join(','));
 
-  const response = await fetch(url.toString(), { signal });
+  const response = await fetchWithRetry(url.toString(), signal);
   if (!response.ok) {
     throw new Error(`Elevation API error: ${response.status} ${response.statusText}`);
   }
@@ -46,7 +65,7 @@ export async function fetchElevationGrid(
   }
 
   const totalPoints = latitudes.length;
-  const batchSize = 100;
+  const batchSize = 1000;
   const allElevations: number[] = [];
 
   for (let i = 0; i < totalPoints; i += batchSize) {
@@ -60,9 +79,9 @@ export async function fetchElevationGrid(
 
     onProgress?.(Math.min(100, ((i + batchSize) / totalPoints) * 100));
 
-    // Small delay between batches to be nice to the API
+    // Delay between batches to avoid rate limits
     if (i + batchSize < totalPoints) {
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
   }
 
