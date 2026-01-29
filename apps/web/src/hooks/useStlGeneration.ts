@@ -9,6 +9,7 @@ export interface StlGenerationFeatures {
   roads?: GeoJSON.Feature[] | null;
   bounds?: Bounds | null;
   elevationGrid?: number[][] | null;
+  buildingScale?: number;
 }
 
 export function useStlGeneration() {
@@ -45,6 +46,7 @@ export function useStlGeneration() {
                   depth: options?.depth ?? options?.width ?? 100,
                   baseHeight: options?.baseHeight ?? 2,
                   verticalScale: options?.verticalScale ?? 1.5,
+                  buildingScale: features.buildingScale,
                 },
               );
               allTriangles = [...terrainTriangles, ...featureTriangles];

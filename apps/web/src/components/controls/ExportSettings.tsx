@@ -9,6 +9,8 @@ interface ExportSettingsProps {
   onBaseHeightChange: (height: number) => void;
   showBuildings: boolean;
   onShowBuildingsChange: (show: boolean) => void;
+  buildingScale: number;
+  onBuildingScaleChange: (scale: number) => void;
   showRoads: boolean;
   onShowRoadsChange: (show: boolean) => void;
 }
@@ -24,6 +26,8 @@ export function ExportSettings({
   onBaseHeightChange,
   showBuildings,
   onShowBuildingsChange,
+  buildingScale,
+  onBuildingScaleChange,
   showRoads,
   onShowRoadsChange,
 }: ExportSettingsProps) {
@@ -116,7 +120,7 @@ export function ExportSettings({
       {/* Feature Overlays */}
       <div className="border-t border-slate-700 pt-4">
         <label className="text-sm font-medium text-slate-300 block mb-3">3D Features</label>
-        <div className="space-y-2">
+        <div className="space-y-3">
           <label className="flex items-center gap-3 cursor-pointer">
             <input
               type="checkbox"
@@ -126,6 +130,27 @@ export function ExportSettings({
             />
             <span className="text-sm text-slate-300">Buildings</span>
           </label>
+          {showBuildings && (
+            <div className="ml-7">
+              <div className="flex justify-between items-center mb-1">
+                <label className="text-xs font-medium text-slate-400">Building Scale</label>
+                <span className="text-xs text-slate-500">{buildingScale.toFixed(1)}x</span>
+              </div>
+              <input
+                type="range"
+                min="0.5"
+                max="10"
+                step="0.5"
+                value={buildingScale}
+                onChange={(e) => onBuildingScaleChange(Number(e.target.value))}
+                className="w-full accent-primary-600"
+              />
+              <div className="flex justify-between text-xs text-slate-600 mt-0.5">
+                <span>0.5x</span>
+                <span>10x</span>
+              </div>
+            </div>
+          )}
           <label className="flex items-center gap-3 cursor-pointer">
             <input
               type="checkbox"

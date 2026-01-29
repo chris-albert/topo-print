@@ -28,6 +28,7 @@ function HomePage() {
   const [baseHeight, setBaseHeight] = useState(2);
   const [mapboxToken, setMapboxToken] = useState(getStoredMapboxToken);
   const [showBuildings, setShowBuildings] = useState(false);
+  const [buildingScale, setBuildingScale] = useState(1);
   const [showRoads, setShowRoads] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
@@ -59,10 +60,10 @@ function HomePage() {
       generate(
         elevationData,
         { width: modelWidth, verticalScale, baseHeight },
-        { buildings, roads, bounds, elevationGrid: elevationData },
+        { buildings, roads, bounds, elevationGrid: elevationData, buildingScale },
       );
     }
-  }, [elevationData, modelWidth, verticalScale, baseHeight, buildings, roads, bounds, generate]);
+  }, [elevationData, modelWidth, verticalScale, baseHeight, buildingScale, buildings, roads, bounds, generate]);
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 p-6 max-w-[1600px] mx-auto">
@@ -91,6 +92,7 @@ function HomePage() {
                 modelWidth={modelWidth}
                 verticalScale={verticalScale}
                 baseHeight={baseHeight}
+                buildingScale={buildingScale}
                 buildings={buildings}
                 roads={roads}
                 bounds={bounds}
@@ -169,6 +171,8 @@ function HomePage() {
             onBaseHeightChange={setBaseHeight}
             showBuildings={showBuildings}
             onShowBuildingsChange={setShowBuildings}
+            buildingScale={buildingScale}
+            onBuildingScaleChange={setBuildingScale}
             showRoads={showRoads}
             onShowRoadsChange={setShowRoads}
           />

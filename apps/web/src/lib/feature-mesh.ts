@@ -8,6 +8,7 @@ export interface FeatureMeshOptions {
   depth: number;
   baseHeight: number;
   verticalScale: number;
+  buildingScale?: number;
 }
 
 export function buildFeatureMesh(
@@ -17,7 +18,7 @@ export function buildFeatureMesh(
   elevationGrid: number[][],
   options: FeatureMeshOptions,
 ): Triangle[] {
-  const { width, depth, baseHeight, verticalScale } = options;
+  const { width, depth, baseHeight, verticalScale, buildingScale = 1 } = options;
   const rows = elevationGrid.length;
   const cols = elevationGrid[0].length;
 
@@ -91,7 +92,7 @@ export function buildFeatureMesh(
     const polygons = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
     const heightProp = feature.properties?.height;
     const buildingMeters = typeof heightProp === 'number' ? heightProp : 12;
-    const modelBuildingHeight = metersToModelHeight(buildingMeters);
+    const modelBuildingHeight = metersToModelHeight(buildingMeters) * buildingScale;
 
     for (const rings of polygons) {
       const outerRing = rings[0];
