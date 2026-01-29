@@ -198,9 +198,9 @@ export function buildFeatureMesh(
         const v1l: Vec3 = { x: p1.x + nx, y: p1.y + ny, z: z1 };
         const v1r: Vec3 = { x: p1.x - nx, y: p1.y - ny, z: z1 };
 
-        // Quad strip: two triangles per segment
-        triangles.push(createTriangle(v0l, v1l, v0r));
-        triangles.push(createTriangle(v0r, v1l, v1r));
+        // Quad strip: two triangles per segment (upward-facing normals)
+        triangles.push(createTriangle(v0l, v0r, v1l));
+        triangles.push(createTriangle(v1l, v0r, v1r));
       }
     }
   }
