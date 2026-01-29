@@ -10,6 +10,8 @@ export interface StlGenerationFeatures {
   bounds?: Bounds | null;
   elevationGrid?: number[][] | null;
   buildingScale?: number;
+  footprintScale?: number;
+  houseShape?: boolean;
 }
 
 export function useStlGeneration() {
@@ -47,6 +49,8 @@ export function useStlGeneration() {
                   baseHeight: options?.baseHeight ?? 2,
                   verticalScale: options?.verticalScale ?? 1.5,
                   buildingScale: features.buildingScale,
+                  footprintScale: features.footprintScale,
+                  houseShape: features.houseShape,
                 },
               );
               allTriangles = [...terrainTriangles, ...featureTriangles];

@@ -31,6 +31,8 @@ function HomePage() {
   const [showBuildings, setShowBuildings] = useState(false);
   const [buildingScale, setBuildingScale] = useState(1);
   const [buildingAddress, setBuildingAddress] = useState('');
+  const [houseShape, setHouseShape] = useState(false);
+  const [footprintScale, setFootprintScale] = useState(1);
   const [showRoads, setShowRoads] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [filteredBuildings, setFilteredBuildings] = useState<GeoJSON.Feature[] | null>(null);
@@ -113,10 +115,10 @@ function HomePage() {
       generate(
         elevationData,
         { width: modelWidth, verticalScale, baseHeight },
-        { buildings: displayBuildings, roads, bounds, elevationGrid: elevationData, buildingScale },
+        { buildings: displayBuildings, roads, bounds, elevationGrid: elevationData, buildingScale, footprintScale, houseShape },
       );
     }
-  }, [elevationData, modelWidth, verticalScale, baseHeight, buildingScale, displayBuildings, roads, bounds, generate]);
+  }, [elevationData, modelWidth, verticalScale, baseHeight, buildingScale, footprintScale, houseShape, displayBuildings, roads, bounds, generate]);
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 p-6 max-w-[1600px] mx-auto">
@@ -146,6 +148,8 @@ function HomePage() {
                 verticalScale={verticalScale}
                 baseHeight={baseHeight}
                 buildingScale={buildingScale}
+                footprintScale={footprintScale}
+                houseShape={houseShape}
                 buildings={displayBuildings}
                 roads={roads}
                 bounds={bounds}
@@ -230,6 +234,10 @@ function HomePage() {
             onBuildingAddressChange={setBuildingAddress}
             buildingAddressError={addressError}
             buildingMatchCount={filteredBuildings?.length ?? null}
+            houseShape={houseShape}
+            onHouseShapeChange={setHouseShape}
+            footprintScale={footprintScale}
+            onFootprintScaleChange={setFootprintScale}
             showRoads={showRoads}
             onShowRoadsChange={setShowRoads}
           />

@@ -13,6 +13,8 @@ interface TerrainPreviewProps {
   verticalScale: number;
   baseHeight: number;
   buildingScale?: number;
+  footprintScale?: number;
+  houseShape?: boolean;
   buildings?: GeoJSON.Feature[] | null;
   roads?: GeoJSON.Feature[] | null;
   bounds?: Bounds | null;
@@ -45,7 +47,7 @@ function trianglesToBufferGeometry(triangles: Triangle[], center: THREE.Vector3)
   return geo;
 }
 
-function TerrainMesh({ elevationData, modelWidth, verticalScale, baseHeight, buildingScale = 1, buildings, roads, bounds }: TerrainPreviewProps) {
+function TerrainMesh({ elevationData, modelWidth, verticalScale, baseHeight, buildingScale = 1, footprintScale = 1, houseShape = false, buildings, roads, bounds }: TerrainPreviewProps) {
   const { terrainGeo, buildingGeo, roadGeo } = useMemo(() => {
     const grid = {
       data: elevationData,
@@ -93,6 +95,8 @@ function TerrainMesh({ elevationData, modelWidth, verticalScale, baseHeight, bui
         baseHeight,
         verticalScale,
         buildingScale,
+        footprintScale,
+        houseShape,
       };
 
       const buildingFeatures = buildings ?? [];
@@ -114,7 +118,7 @@ function TerrainMesh({ elevationData, modelWidth, verticalScale, baseHeight, bui
     }
 
     return { terrainGeo: tGeo, buildingGeo: bGeo, roadGeo: rGeo };
-  }, [elevationData, modelWidth, verticalScale, baseHeight, buildingScale, buildings, roads, bounds]);
+  }, [elevationData, modelWidth, verticalScale, baseHeight, buildingScale, footprintScale, houseShape, buildings, roads, bounds]);
 
   return (
     <group>

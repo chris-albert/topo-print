@@ -9,6 +9,8 @@ export interface FeatureMeshOptions {
   baseHeight: number;
   verticalScale: number;
   buildingScale?: number;
+  footprintScale?: number;
+  houseShape?: boolean;
 }
 
 export function buildFeatureMesh(
@@ -18,7 +20,7 @@ export function buildFeatureMesh(
   elevationGrid: number[][],
   options: FeatureMeshOptions,
 ): Triangle[] {
-  const { width, depth, baseHeight, verticalScale, buildingScale = 1 } = options;
+  const { width, depth, baseHeight, verticalScale, buildingScale = 1, footprintScale = 1, houseShape = false } = options;
   const rows = elevationGrid.length;
   const cols = elevationGrid[0].length;
 
@@ -110,9 +112,19 @@ export function buildFeatureMesh(
         modelCoords.push({ x, y, terrainZ });
       }
 
+      // Scale footprint outward from centroid
+      if (footprintScale !== 1) {
+        const cx = modelCoords.reduce((s, c) => s + c.x, 0) / modelCoords.length;
+        const cy = modelCoords.reduce((s, c) => s + c.y, 0) / modelCoords.length;
+        for (const c of modelCoords) {
+          c.x = cx + (c.x - cx) * footprintScale;
+          c.y = cy + (c.y - cy) * footprintScale;
+        }
+      }
+
       // Average terrain height for this building (use for a flat roofline)
       const avgTerrainZ = modelCoords.reduce((sum, c) => sum + c.terrainZ, 0) / modelCoords.length;
-      const topZ = avgTerrainZ + modelBuildingHeight;
+      const wallTopZ = avgTerrainZ + modelBuildingHeight;
 
       // Triangulate using earcut
       const flatCoords: number[] = [];
@@ -122,16 +134,86 @@ export function buildFeatureMesh(
 
       const indices = earcut(flatCoords);
 
-      // Top face
-      for (let i = 0; i < indices.length; i += 3) {
-        const a = modelCoords[indices[i]];
-        const b = modelCoords[indices[i + 1]];
-        const c = modelCoords[indices[i + 2]];
-        triangles.push(createTriangle(
-          { x: a.x, y: a.y, z: topZ },
-          { x: b.x, y: b.y, z: topZ },
-          { x: c.x, y: c.y, z: topZ },
-        ));
+      if (houseShape) {
+        // --- Gabled house roof ---
+        // Find the oriented bounding box principal axis
+        const cx = modelCoords.reduce((s, c) => s + c.x, 0) / modelCoords.length;
+        const cy = modelCoords.reduce((s, c) => s + c.y, 0) / modelCoords.length;
+
+        // Find axis-aligned bounding box to determine ridge direction
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        for (const c of modelCoords) {
+          if (c.x < minX) minX = c.x;
+          if (c.x > maxX) maxX = c.x;
+          if (c.y < minY) minY = c.y;
+          if (c.y > maxY) maxY = c.y;
+        }
+        const spanX = maxX - minX;
+        const spanY = maxY - minY;
+        const roofHeight = modelBuildingHeight * 0.5;
+        const ridgeZ = wallTopZ + roofHeight;
+
+        // Ridge runs along the longer axis
+        let ridgeStart: Vec3, ridgeEnd: Vec3;
+        if (spanX >= spanY) {
+          // Ridge along X axis
+          ridgeStart = { x: minX, y: cy, z: ridgeZ };
+          ridgeEnd = { x: maxX, y: cy, z: ridgeZ };
+        } else {
+          // Ridge along Y axis
+          ridgeStart = { x: cx, y: minY, z: ridgeZ };
+          ridgeEnd = { x: cx, y: maxY, z: ridgeZ };
+        }
+
+        // Roof faces: for each wall edge, create triangles to the ridge
+        for (let i = 0; i < modelCoords.length; i++) {
+          const curr = modelCoords[i];
+          const next = modelCoords[(i + 1) % modelCoords.length];
+          const wallCurr: Vec3 = { x: curr.x, y: curr.y, z: wallTopZ };
+          const wallNext: Vec3 = { x: next.x, y: next.y, z: wallTopZ };
+
+          // Project edge midpoint onto ridge to find nearest ridge point
+          const edgeMidX = (curr.x + next.x) / 2;
+          const edgeMidY = (curr.y + next.y) / 2;
+          const ridgeDx = ridgeEnd.x - ridgeStart.x;
+          const ridgeDy = ridgeEnd.y - ridgeStart.y;
+          const ridgeLen2 = ridgeDx * ridgeDx + ridgeDy * ridgeDy;
+          let t = ridgeLen2 > 0
+            ? ((edgeMidX - ridgeStart.x) * ridgeDx + (edgeMidY - ridgeStart.y) * ridgeDy) / ridgeLen2
+            : 0.5;
+          t = Math.max(0, Math.min(1, t));
+          const ridgePoint: Vec3 = {
+            x: ridgeStart.x + t * ridgeDx,
+            y: ridgeStart.y + t * ridgeDy,
+            z: ridgeZ,
+          };
+
+          triangles.push(createTriangle(wallCurr, wallNext, ridgePoint));
+        }
+
+        // Flat top face at wall height (floor of the attic, seals the shape)
+        for (let i = 0; i < indices.length; i += 3) {
+          const a = modelCoords[indices[i]];
+          const b = modelCoords[indices[i + 1]];
+          const c = modelCoords[indices[i + 2]];
+          triangles.push(createTriangle(
+            { x: a.x, y: a.y, z: wallTopZ },
+            { x: b.x, y: b.y, z: wallTopZ },
+            { x: c.x, y: c.y, z: wallTopZ },
+          ));
+        }
+      } else {
+        // --- Flat top ---
+        for (let i = 0; i < indices.length; i += 3) {
+          const a = modelCoords[indices[i]];
+          const b = modelCoords[indices[i + 1]];
+          const c = modelCoords[indices[i + 2]];
+          triangles.push(createTriangle(
+            { x: a.x, y: a.y, z: wallTopZ },
+            { x: b.x, y: b.y, z: wallTopZ },
+            { x: c.x, y: c.y, z: wallTopZ },
+          ));
+        }
       }
 
       // Bottom face (at terrain surface, reversed winding)
@@ -146,13 +228,13 @@ export function buildFeatureMesh(
         ));
       }
 
-      // Walls between top and bottom edges
+      // Walls between wall top and bottom edges
       for (let i = 0; i < modelCoords.length; i++) {
         const curr = modelCoords[i];
         const next = modelCoords[(i + 1) % modelCoords.length];
 
-        const topCurr: Vec3 = { x: curr.x, y: curr.y, z: topZ };
-        const topNext: Vec3 = { x: next.x, y: next.y, z: topZ };
+        const topCurr: Vec3 = { x: curr.x, y: curr.y, z: wallTopZ };
+        const topNext: Vec3 = { x: next.x, y: next.y, z: wallTopZ };
         const botCurr: Vec3 = { x: curr.x, y: curr.y, z: avgTerrainZ };
         const botNext: Vec3 = { x: next.x, y: next.y, z: avgTerrainZ };
 

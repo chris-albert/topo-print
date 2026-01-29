@@ -15,6 +15,10 @@ interface ExportSettingsProps {
   onBuildingAddressChange: (address: string) => void;
   buildingAddressError?: string | null;
   buildingMatchCount?: number | null;
+  houseShape: boolean;
+  onHouseShapeChange: (on: boolean) => void;
+  footprintScale: number;
+  onFootprintScaleChange: (scale: number) => void;
   showRoads: boolean;
   onShowRoadsChange: (show: boolean) => void;
 }
@@ -36,6 +40,10 @@ export function ExportSettings({
   onBuildingAddressChange,
   buildingAddressError,
   buildingMatchCount,
+  houseShape,
+  onHouseShapeChange,
+  footprintScale,
+  onFootprintScaleChange,
   showRoads,
   onShowRoadsChange,
 }: ExportSettingsProps) {
@@ -156,6 +164,38 @@ export function ExportSettings({
                   <p className="text-xs text-green-400 mt-1">Building found</p>
                 )}
               </div>
+              {buildingAddress.trim() && buildingMatchCount != null && buildingMatchCount > 0 && (
+                <>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={houseShape}
+                      onChange={(e) => onHouseShapeChange(e.target.checked)}
+                      className="w-4 h-4 rounded border-slate-600 bg-slate-800 text-primary-600 focus:ring-primary-500 focus:ring-offset-0"
+                    />
+                    <span className="text-xs text-slate-300">House shape (gabled roof)</span>
+                  </label>
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="text-xs font-medium text-slate-400">Footprint Scale</label>
+                      <span className="text-xs text-slate-500">{footprintScale.toFixed(1)}x</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="1"
+                      max="10"
+                      step="0.5"
+                      value={footprintScale}
+                      onChange={(e) => onFootprintScaleChange(Number(e.target.value))}
+                      className="w-full accent-primary-600"
+                    />
+                    <div className="flex justify-between text-xs text-slate-600 mt-0.5">
+                      <span>1x</span>
+                      <span>10x</span>
+                    </div>
+                  </div>
+                </>
+              )}
               <div>
                 <div className="flex justify-between items-center mb-1">
                   <label className="text-xs font-medium text-slate-400">Building Scale</label>
