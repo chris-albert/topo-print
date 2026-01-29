@@ -20,12 +20,12 @@ export function Footer() {
             OpenStreetMap
           </a>
           <a
-            href="https://open-meteo.com/"
+            href="https://www.mapbox.com/about/maps/"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-slate-300 transition-colors"
           >
-            Open-Meteo
+            Mapbox
           </a>
         </div>
       </div>

@@ -33,7 +33,7 @@ function AboutPage() {
               <strong>Map tiles</strong>: OpenStreetMap contributors
             </li>
             <li>
-              <strong>Elevation data</strong>: Open-Meteo Elevation API (90m resolution DEM)
+              <strong>Elevation data</strong>: Mapbox Terrain RGB tiles
             </li>
             <li>
               <strong>Geocoding</strong>: OpenStreetMap Nominatim
@@ -42,10 +42,11 @@ function AboutPage() {
 
           <h2 className="text-xl font-semibold text-gray-100 pt-4">Limitations</h2>
           <ul className="list-disc list-inside space-y-2">
-            <li>Elevation data is based on a 90-meter resolution digital elevation model</li>
+            <li>Elevation data resolution depends on zoom level (typically sub-meter at high zoom)</li>
             <li>Very small areas may have limited terrain detail</li>
             <li>Maximum grid resolution is 100x100 points per fetch</li>
-            <li>All processing happens in your browser - no data is sent to external servers (except API queries)</li>
+            <li>A free Mapbox account is required for elevation data (200K tile requests/month)</li>
+            <li>All processing happens in your browser - no data is sent to external servers (except tile/API queries)</li>
           </ul>
 
           <h2 className="text-xl font-semibold text-gray-100 pt-4">Print Tips</h2>

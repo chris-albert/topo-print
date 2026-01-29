@@ -3,6 +3,7 @@ import { useState, useCallback } from 'react';
 import { MapView } from '../components/map/MapView';
 import { CoordinateInputs } from '../components/controls/CoordinateInputs';
 import { ExportSettings } from '../components/controls/ExportSettings';
+import { MapboxTokenInput, getStoredMapboxToken } from '../components/controls/MapboxTokenInput';
 import { TerrainPreview } from '../components/preview/TerrainPreview';
 import { useElevationData } from '../hooks/useElevationData';
 import { useStlGeneration } from '../hooks/useStlGeneration';
@@ -25,6 +26,7 @@ function HomePage() {
   const [modelWidth, setModelWidth] = useState(100);
   const [verticalScale, setVerticalScale] = useState(1.5);
   const [baseHeight, setBaseHeight] = useState(2);
+  const [mapboxToken, setMapboxToken] = useState(getStoredMapboxToken);
 
   const {
     data: elevationData,
@@ -37,10 +39,10 @@ function HomePage() {
   const { generate, isGenerating } = useStlGeneration();
 
   const handleFetchElevation = useCallback(() => {
-    if (bounds) {
-      fetchElevation(bounds, gridSize);
+    if (bounds && mapboxToken) {
+      fetchElevation(bounds, gridSize, mapboxToken);
     }
-  }, [bounds, gridSize, fetchElevation]);
+  }, [bounds, gridSize, mapboxToken, fetchElevation]);
 
   const handleDownloadSTL = useCallback(() => {
     if (elevationData) {
@@ -90,6 +92,11 @@ function HomePage() {
 
       {/* Right Column - Controls */}
       <div className="w-full lg:w-[400px] flex flex-col gap-4">
+        {/* Mapbox Token */}
+        <div className="bg-slate-900 rounded-xl shadow-sm border border-slate-800 p-4">
+          <MapboxTokenInput token={mapboxToken} onTokenChange={setMapboxToken} />
+        </div>
+
         {/* Export Settings */}
         <div className="bg-slate-900 rounded-xl shadow-sm border border-slate-800 p-4">
           <h2 className="text-lg font-semibold text-gray-100 mb-4">Export Settings</h2>
@@ -108,7 +115,7 @@ function HomePage() {
         {/* Fetch Elevation */}
         <button
           onClick={handleFetchElevation}
-          disabled={!bounds || isFetchingElevation}
+          disabled={!bounds || !mapboxToken || isFetchingElevation}
           className="w-full py-3 px-4 bg-primary-600 hover:bg-primary-700 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
         >
           {isFetchingElevation

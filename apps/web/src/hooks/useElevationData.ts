@@ -8,7 +8,7 @@ export function useElevationData() {
   const [progress, setProgress] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
 
-  const fetch = useCallback(async (bounds: Bounds, gridSize: number) => {
+  const fetch = useCallback(async (bounds: Bounds, gridSize: number, mapboxToken: string) => {
     // Cancel any in-flight request
     abortRef.current?.abort();
     const controller = new AbortController();
@@ -23,6 +23,7 @@ export function useElevationData() {
       const grid = await fetchElevationGrid(
         bounds,
         gridSize,
+        mapboxToken,
         setProgress,
         controller.signal,
       );
