@@ -183,7 +183,7 @@ export function ExportSettings({
                     <input
                       type="range"
                       min="1"
-                      max="10"
+                      max="20"
                       step="0.5"
                       value={footprintScale}
                       onChange={(e) => onFootprintScaleChange(Number(e.target.value))}
@@ -191,7 +191,7 @@ export function ExportSettings({
                     />
                     <div className="flex justify-between text-xs text-slate-600 mt-0.5">
                       <span>1x</span>
-                      <span>10x</span>
+                      <span>20x</span>
                     </div>
                   </div>
                 </>

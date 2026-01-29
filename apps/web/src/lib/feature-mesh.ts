@@ -122,9 +122,12 @@ export function buildFeatureMesh(
         }
       }
 
-      // Average terrain height for this building (use for a flat roofline)
+      // Terrain height stats for this building
       const avgTerrainZ = modelCoords.reduce((sum, c) => sum + c.terrainZ, 0) / modelCoords.length;
+      const minTerrainZ = Math.min(...modelCoords.map(c => c.terrainZ));
+      // Roof measured from average terrain; base extends to lowest terrain point so walls always reach the ground
       const wallTopZ = avgTerrainZ + modelBuildingHeight;
+      const wallBottomZ = minTerrainZ;
 
       // Triangulate using earcut
       const flatCoords: number[] = [];
@@ -216,15 +219,15 @@ export function buildFeatureMesh(
         }
       }
 
-      // Bottom face (at terrain surface, reversed winding)
+      // Bottom face (at lowest terrain point, reversed winding)
       for (let i = 0; i < indices.length; i += 3) {
         const a = modelCoords[indices[i]];
         const b = modelCoords[indices[i + 1]];
         const c = modelCoords[indices[i + 2]];
         triangles.push(createTriangle(
-          { x: a.x, y: a.y, z: avgTerrainZ },
-          { x: c.x, y: c.y, z: avgTerrainZ },
-          { x: b.x, y: b.y, z: avgTerrainZ },
+          { x: a.x, y: a.y, z: wallBottomZ },
+          { x: c.x, y: c.y, z: wallBottomZ },
+          { x: b.x, y: b.y, z: wallBottomZ },
         ));
       }
 
@@ -235,8 +238,8 @@ export function buildFeatureMesh(
 
         const topCurr: Vec3 = { x: curr.x, y: curr.y, z: wallTopZ };
         const topNext: Vec3 = { x: next.x, y: next.y, z: wallTopZ };
-        const botCurr: Vec3 = { x: curr.x, y: curr.y, z: avgTerrainZ };
-        const botNext: Vec3 = { x: next.x, y: next.y, z: avgTerrainZ };
+        const botCurr: Vec3 = { x: curr.x, y: curr.y, z: wallBottomZ };
+        const botNext: Vec3 = { x: next.x, y: next.y, z: wallBottomZ };
 
         // Two triangles per wall segment (outward-facing normals)
         triangles.push(createTriangle(topCurr, topNext, botCurr));
