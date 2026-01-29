@@ -57,14 +57,24 @@ export function buildTerrainMesh(
     }
   }
 
-  // --- Bottom face (flat at z=0) ---
-  const b0: Vec3 = { x: 0, y: 0, z: 0 };
-  const b1: Vec3 = { x: opts.width, y: 0, z: 0 };
-  const b2: Vec3 = { x: 0, y: opts.depth, z: 0 };
-  const b3: Vec3 = { x: opts.width, y: opts.depth, z: 0 };
-  // Bottom face normals point down (reversed winding)
-  triangles.push(createTriangle(b0, b1, b2));
-  triangles.push(createTriangle(b1, b3, b2));
+  // --- Bottom face (grid at z=0, same resolution so perimeter vertices match walls) ---
+  for (let r = 0; r < rows - 1; r++) {
+    for (let c = 0; c < cols - 1; c++) {
+      const x0 = (c / (cols - 1)) * opts.width;
+      const x1 = ((c + 1) / (cols - 1)) * opts.width;
+      const y0 = ((rows - 1 - (r + 1)) / (rows - 1)) * opts.depth;
+      const y1 = ((rows - 1 - r) / (rows - 1)) * opts.depth;
+
+      const tl: Vec3 = { x: x0, y: y1, z: 0 };
+      const tr: Vec3 = { x: x1, y: y1, z: 0 };
+      const bl: Vec3 = { x: x0, y: y0, z: 0 };
+      const br: Vec3 = { x: x1, y: y0, z: 0 };
+
+      // Winding order gives downward-facing normal (-Z)
+      triangles.push(createTriangle(tl, tr, bl));
+      triangles.push(createTriangle(tr, br, bl));
+    }
+  }
 
   // --- Front wall (row = rows-1, y = 0) ---
   for (let c = 0; c < cols - 1; c++) {
