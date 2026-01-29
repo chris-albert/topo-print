@@ -39,18 +39,21 @@ export function buildFeatureMesh(
     const rowF = ((bounds.north - lat) / (bounds.north - bounds.south)) * (rows - 1);
     const colF = ((lng - bounds.west) / (bounds.east - bounds.west)) * (cols - 1);
 
-    const r0 = Math.floor(rowF);
-    const c0 = Math.floor(colF);
-    const r1 = Math.min(r0 + 1, rows - 1);
-    const c1 = Math.min(c0 + 1, cols - 1);
-    const rFrac = rowF - r0;
-    const cFrac = colF - c0;
+    const clampedRow = Math.max(0, Math.min(rowF, rows - 1));
+    const clampedCol = Math.max(0, Math.min(colF, cols - 1));
+
+    const r0 = Math.min(Math.floor(clampedRow), rows - 2);
+    const c0 = Math.min(Math.floor(clampedCol), cols - 2);
+    const r1 = r0 + 1;
+    const c1 = c0 + 1;
+    const rFrac = clampedRow - r0;
+    const cFrac = clampedCol - c0;
 
     // Bilinear interpolation
-    const e00 = elevationGrid[Math.max(0, r0)][Math.max(0, c0)];
-    const e01 = elevationGrid[Math.max(0, r0)][Math.min(c1, cols - 1)];
-    const e10 = elevationGrid[Math.min(r1, rows - 1)][Math.max(0, c0)];
-    const e11 = elevationGrid[Math.min(r1, rows - 1)][Math.min(c1, cols - 1)];
+    const e00 = elevationGrid[r0][c0];
+    const e01 = elevationGrid[r0][c1];
+    const e10 = elevationGrid[r1][c0];
+    const e11 = elevationGrid[r1][c1];
 
     const rawElev = e00 * (1 - rFrac) * (1 - cFrac) +
                     e01 * (1 - rFrac) * cFrac +
