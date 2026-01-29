@@ -143,11 +143,12 @@ function HomePage() {
 
         {/* 3D Preview */}
         {elevationData && (
-          <div className="bg-slate-900 rounded-xl shadow-sm border border-slate-800 overflow-hidden">
-            <div className="p-4 border-b border-slate-800">
+          <div className="bg-slate-900 rounded-xl shadow-sm border border-slate-800 overflow-hidden ring-1 ring-primary-500/20">
+            <div className="p-4 border-b border-slate-800 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-100">3D Preview</h2>
+              <span className="text-xs text-slate-500">Scroll to zoom · Drag to rotate · Right-drag to pan</span>
             </div>
-            <div className="h-[300px]">
+            <div className="h-[500px]">
               <TerrainPreview
                 elevationData={elevationData}
                 modelWidth={modelWidth}

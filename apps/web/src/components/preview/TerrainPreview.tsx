@@ -135,11 +135,22 @@ function TerrainMesh({ elevationData, modelWidth, verticalScale, baseHeight, bui
 
 export function TerrainPreview(props: TerrainPreviewProps) {
   return (
-    <Canvas camera={{ position: [0, 80, 80], fov: 50 }} style={{ background: '#0f172a' }}>
+    <Canvas camera={{ position: [0, 60, 60], fov: 45 }} style={{ background: '#0f172a' }}>
       <ambientLight intensity={0.4} />
       <directionalLight position={[50, 100, 50]} intensity={1.2} />
       <TerrainMesh {...props} />
-      <OrbitControls enablePan enableZoom enableRotate />
+      <OrbitControls
+        enablePan
+        enableZoom
+        enableRotate
+        enableDamping
+        dampingFactor={0.12}
+        minDistance={5}
+        maxDistance={300}
+        zoomSpeed={1.2}
+        panSpeed={0.8}
+        rotateSpeed={0.6}
+      />
     </Canvas>
   );
 }
