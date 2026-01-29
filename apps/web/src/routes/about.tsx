@@ -44,7 +44,7 @@ function AboutPage() {
           <ul className="list-disc list-inside space-y-2">
             <li>Elevation data resolution depends on zoom level (typically sub-meter at high zoom)</li>
             <li>Very small areas may have limited terrain detail</li>
-            <li>Maximum grid resolution is 100x100 points per fetch</li>
+            <li>Maximum grid resolution is 250x250 points per fetch</li>
             <li>A free Mapbox account is required for elevation data (200K tile requests/month)</li>
             <li>All processing happens in your browser - no data is sent to external servers (except tile/API queries)</li>
           </ul>

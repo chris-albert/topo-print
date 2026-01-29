@@ -86,7 +86,8 @@ function pickZoom(bounds: Bounds): number {
   if (maxSpan > 0.5) return 11;
   if (maxSpan > 0.2) return 12;
   if (maxSpan > 0.05) return 13;
-  return 14;
+  if (maxSpan > 0.02) return 14;
+  return 15;
 }
 
 /** Get elevation for a specific lat/lng from tile image data */

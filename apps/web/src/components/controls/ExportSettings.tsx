@@ -30,7 +30,7 @@ export function ExportSettings({
         <input
           type="range"
           min="10"
-          max="100"
+          max="250"
           step="5"
           value={gridSize}
           onChange={(e) => onGridSizeChange(Number(e.target.value))}
@@ -38,7 +38,7 @@ export function ExportSettings({
         />
         <div className="flex justify-between text-xs text-slate-500 mt-1">
           <span>Low (10)</span>
-          <span>High (100)</span>
+          <span>High (250)</span>
         </div>
       </div>
 
