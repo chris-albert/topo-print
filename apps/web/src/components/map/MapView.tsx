@@ -13,8 +13,8 @@ interface MapViewProps {
 export function MapView({ bounds, onBoundsChange, drawMode, onDrawComplete }: MapViewProps) {
   return (
     <MapContainer
-      center={[36.1, -112.1]}
-      zoom={10}
+      center={[37.77, -122.43]}
+      zoom={12}
       className="h-full w-full"
       zoomControl={true}
     >
