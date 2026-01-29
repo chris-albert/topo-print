@@ -11,6 +11,10 @@ interface ExportSettingsProps {
   onShowBuildingsChange: (show: boolean) => void;
   buildingScale: number;
   onBuildingScaleChange: (scale: number) => void;
+  buildingAddress: string;
+  onBuildingAddressChange: (address: string) => void;
+  buildingAddressError?: string | null;
+  buildingMatchCount?: number | null;
   showRoads: boolean;
   onShowRoadsChange: (show: boolean) => void;
 }
@@ -28,6 +32,10 @@ export function ExportSettings({
   onShowBuildingsChange,
   buildingScale,
   onBuildingScaleChange,
+  buildingAddress,
+  onBuildingAddressChange,
+  buildingAddressError,
+  buildingMatchCount,
   showRoads,
   onShowRoadsChange,
 }: ExportSettingsProps) {
@@ -131,23 +139,41 @@ export function ExportSettings({
             <span className="text-sm text-slate-300">Buildings</span>
           </label>
           {showBuildings && (
-            <div className="ml-7">
-              <div className="flex justify-between items-center mb-1">
-                <label className="text-xs font-medium text-slate-400">Building Scale</label>
-                <span className="text-xs text-slate-500">{buildingScale.toFixed(1)}x</span>
+            <div className="ml-7 space-y-3">
+              <div>
+                <label className="text-xs font-medium text-slate-400 block mb-1">Single Building Address</label>
+                <input
+                  type="text"
+                  value={buildingAddress}
+                  onChange={(e) => onBuildingAddressChange(e.target.value)}
+                  placeholder="Leave empty for all buildings"
+                  className="w-full px-3 py-1.5 text-sm bg-slate-800 border border-slate-700 text-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none placeholder-slate-600"
+                />
+                {buildingAddressError && (
+                  <p className="text-xs text-amber-400 mt-1">{buildingAddressError}</p>
+                )}
+                {buildingAddress.trim() && !buildingAddressError && buildingMatchCount != null && buildingMatchCount > 0 && (
+                  <p className="text-xs text-green-400 mt-1">Building found</p>
+                )}
               </div>
-              <input
-                type="range"
-                min="0.5"
-                max="10"
-                step="0.5"
-                value={buildingScale}
-                onChange={(e) => onBuildingScaleChange(Number(e.target.value))}
-                className="w-full accent-primary-600"
-              />
-              <div className="flex justify-between text-xs text-slate-600 mt-0.5">
-                <span>0.5x</span>
-                <span>10x</span>
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="text-xs font-medium text-slate-400">Building Scale</label>
+                  <span className="text-xs text-slate-500">{buildingScale.toFixed(1)}x</span>
+                </div>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="10"
+                  step="0.5"
+                  value={buildingScale}
+                  onChange={(e) => onBuildingScaleChange(Number(e.target.value))}
+                  className="w-full accent-primary-600"
+                />
+                <div className="flex justify-between text-xs text-slate-600 mt-0.5">
+                  <span>0.5x</span>
+                  <span>10x</span>
+                </div>
               </div>
             </div>
           )}

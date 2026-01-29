@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { MapView } from '../components/map/MapView';
 import { CoordinateInputs } from '../components/controls/CoordinateInputs';
 import { ExportSettings } from '../components/controls/ExportSettings';
@@ -7,6 +7,7 @@ import { MapboxTokenInput, getStoredMapboxToken } from '../components/controls/M
 import { TerrainPreview } from '../components/preview/TerrainPreview';
 import { useElevationData } from '../hooks/useElevationData';
 import { useStlGeneration } from '../hooks/useStlGeneration';
+import { geocodeAddress, findBuildingAtPoint } from '../lib/geocode';
 
 export interface Bounds {
   north: number;
@@ -29,8 +30,11 @@ function HomePage() {
   const [mapboxToken, setMapboxToken] = useState(getStoredMapboxToken);
   const [showBuildings, setShowBuildings] = useState(false);
   const [buildingScale, setBuildingScale] = useState(1);
+  const [buildingAddress, setBuildingAddress] = useState('');
   const [showRoads, setShowRoads] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [filteredBuildings, setFilteredBuildings] = useState<GeoJSON.Feature[] | null>(null);
+  const [addressError, setAddressError] = useState<string | null>(null);
 
   const {
     data: elevationData,
@@ -49,6 +53,55 @@ function HomePage() {
     if (elevationData) setShowPreview(true);
   }, [elevationData]);
 
+  // Geocode address and filter to a single building
+  useEffect(() => {
+    const trimmed = buildingAddress.trim();
+    if (!trimmed || !buildings || buildings.length === 0 || !mapboxToken) {
+      setFilteredBuildings(null);
+      setAddressError(null);
+      return;
+    }
+
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      setAddressError(null);
+      const point = await geocodeAddress(trimmed, mapboxToken);
+      if (cancelled) return;
+
+      if (!point) {
+        setAddressError('Address not found');
+        setFilteredBuildings(null);
+        return;
+      }
+
+      const [lng, lat] = point;
+      const match = findBuildingAtPoint(buildings, lng, lat);
+      if (cancelled) return;
+
+      if (!match) {
+        setAddressError('No building found at that address');
+        setFilteredBuildings(null);
+        return;
+      }
+
+      setFilteredBuildings([match]);
+      setAddressError(null);
+    }, 500); // debounce
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [buildingAddress, buildings, mapboxToken]);
+
+  // Use filtered buildings if address is set, otherwise all buildings
+  const displayBuildings = useMemo(() => {
+    if (!buildings) return null;
+    if (buildingAddress.trim() && filteredBuildings) return filteredBuildings;
+    if (buildingAddress.trim() && !filteredBuildings) return []; // address set but no match yet
+    return buildings;
+  }, [buildings, buildingAddress, filteredBuildings]);
+
   const handleFetchElevation = useCallback(() => {
     if (bounds && mapboxToken) {
       fetchElevation(bounds, gridSize, mapboxToken, showBuildings, showRoads);
@@ -60,10 +113,10 @@ function HomePage() {
       generate(
         elevationData,
         { width: modelWidth, verticalScale, baseHeight },
-        { buildings, roads, bounds, elevationGrid: elevationData, buildingScale },
+        { buildings: displayBuildings, roads, bounds, elevationGrid: elevationData, buildingScale },
       );
     }
-  }, [elevationData, modelWidth, verticalScale, baseHeight, buildingScale, buildings, roads, bounds, generate]);
+  }, [elevationData, modelWidth, verticalScale, baseHeight, buildingScale, displayBuildings, roads, bounds, generate]);
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 p-6 max-w-[1600px] mx-auto">
@@ -93,7 +146,7 @@ function HomePage() {
                 verticalScale={verticalScale}
                 baseHeight={baseHeight}
                 buildingScale={buildingScale}
-                buildings={buildings}
+                buildings={displayBuildings}
                 roads={roads}
                 bounds={bounds}
               />
@@ -173,6 +226,10 @@ function HomePage() {
             onShowBuildingsChange={setShowBuildings}
             buildingScale={buildingScale}
             onBuildingScaleChange={setBuildingScale}
+            buildingAddress={buildingAddress}
+            onBuildingAddressChange={setBuildingAddress}
+            buildingAddressError={addressError}
+            buildingMatchCount={filteredBuildings?.length ?? null}
             showRoads={showRoads}
             onShowRoadsChange={setShowRoads}
           />
