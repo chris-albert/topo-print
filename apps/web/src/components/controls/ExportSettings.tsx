@@ -7,6 +7,10 @@ interface ExportSettingsProps {
   onVerticalScaleChange: (scale: number) => void;
   baseHeight: number;
   onBaseHeightChange: (height: number) => void;
+  showBuildings: boolean;
+  onShowBuildingsChange: (show: boolean) => void;
+  showRoads: boolean;
+  onShowRoadsChange: (show: boolean) => void;
 }
 
 export function ExportSettings({
@@ -18,6 +22,10 @@ export function ExportSettings({
   onVerticalScaleChange,
   baseHeight,
   onBaseHeightChange,
+  showBuildings,
+  onShowBuildingsChange,
+  showRoads,
+  onShowRoadsChange,
 }: ExportSettingsProps) {
   return (
     <div className="space-y-4">
@@ -102,6 +110,31 @@ export function ExportSettings({
         <div className="flex justify-between text-xs text-slate-500 mt-1">
           <span>1mm</span>
           <span>10mm</span>
+        </div>
+      </div>
+
+      {/* Feature Overlays */}
+      <div className="border-t border-slate-700 pt-4">
+        <label className="text-sm font-medium text-slate-300 block mb-3">3D Features</label>
+        <div className="space-y-2">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showBuildings}
+              onChange={(e) => onShowBuildingsChange(e.target.checked)}
+              className="w-4 h-4 rounded border-slate-600 bg-slate-800 text-primary-600 focus:ring-primary-500 focus:ring-offset-0"
+            />
+            <span className="text-sm text-slate-300">Buildings</span>
+          </label>
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showRoads}
+              onChange={(e) => onShowRoadsChange(e.target.checked)}
+              className="w-4 h-4 rounded border-slate-600 bg-slate-800 text-primary-600 focus:ring-primary-500 focus:ring-offset-0"
+            />
+            <span className="text-sm text-slate-300">Roads</span>
+          </label>
         </div>
       </div>
     </div>

@@ -2,18 +2,50 @@ import { useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
-import type { TerrainMeshOptions } from '@topo-print/stl-utils';
+import type { TerrainMeshOptions, Triangle } from '@topo-print/stl-utils';
 import { buildTerrainMesh } from '@topo-print/stl-utils';
+import { buildFeatureMesh } from '../../lib/feature-mesh';
+import type { Bounds } from '../../lib/elevation-api';
 
 interface TerrainPreviewProps {
   elevationData: number[][];
   modelWidth: number;
   verticalScale: number;
   baseHeight: number;
+  buildings?: GeoJSON.Feature[] | null;
+  roads?: GeoJSON.Feature[] | null;
+  bounds?: Bounds | null;
 }
 
-function TerrainMesh({ elevationData, modelWidth, verticalScale, baseHeight }: TerrainPreviewProps) {
-  const geometry = useMemo(() => {
+function trianglesToBufferGeometry(triangles: Triangle[], center: THREE.Vector3): THREE.BufferGeometry {
+  const positions = new Float32Array(triangles.length * 9);
+  const normals = new Float32Array(triangles.length * 9);
+
+  for (let i = 0; i < triangles.length; i++) {
+    const tri = triangles[i];
+    const offset = i * 9;
+
+    for (let v = 0; v < 3; v++) {
+      positions[offset + v * 3] = tri.vertices[v].x;
+      positions[offset + v * 3 + 1] = tri.vertices[v].z; // swap Y/Z for Three.js
+      positions[offset + v * 3 + 2] = -tri.vertices[v].y;
+
+      normals[offset + v * 3] = tri.normal.x;
+      normals[offset + v * 3 + 1] = tri.normal.z;
+      normals[offset + v * 3 + 2] = -tri.normal.y;
+    }
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geo.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
+  geo.translate(-center.x, -center.y, -center.z);
+
+  return geo;
+}
+
+function TerrainMesh({ elevationData, modelWidth, verticalScale, baseHeight, buildings, roads, bounds }: TerrainPreviewProps) {
+  const { terrainGeo, buildingGeo, roadGeo } = useMemo(() => {
     const grid = {
       data: elevationData,
       rows: elevationData.length,
@@ -22,48 +54,82 @@ function TerrainMesh({ elevationData, modelWidth, verticalScale, baseHeight }: T
 
     const options: TerrainMeshOptions = {
       width: modelWidth,
-      depth: modelWidth, // square
+      depth: modelWidth,
       verticalScale,
       baseHeight,
     };
 
-    const triangles = buildTerrainMesh(grid, options);
+    const terrainTriangles = buildTerrainMesh(grid, options);
 
-    const positions = new Float32Array(triangles.length * 9);
-    const normals = new Float32Array(triangles.length * 9);
-
-    for (let i = 0; i < triangles.length; i++) {
-      const tri = triangles[i];
+    // Compute center from terrain for consistent centering
+    const terrainPositions = new Float32Array(terrainTriangles.length * 9);
+    for (let i = 0; i < terrainTriangles.length; i++) {
+      const tri = terrainTriangles[i];
       const offset = i * 9;
-
       for (let v = 0; v < 3; v++) {
-        positions[offset + v * 3] = tri.vertices[v].x;
-        positions[offset + v * 3 + 1] = tri.vertices[v].z; // swap Y/Z for Three.js
-        positions[offset + v * 3 + 2] = -tri.vertices[v].y;
-
-        normals[offset + v * 3] = tri.normal.x;
-        normals[offset + v * 3 + 1] = tri.normal.z;
-        normals[offset + v * 3 + 2] = -tri.normal.y;
+        terrainPositions[offset + v * 3] = tri.vertices[v].x;
+        terrainPositions[offset + v * 3 + 1] = tri.vertices[v].z;
+        terrainPositions[offset + v * 3 + 2] = -tri.vertices[v].y;
       }
     }
 
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geo.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
-
-    // Center the geometry
-    geo.computeBoundingBox();
+    const tempGeo = new THREE.BufferGeometry();
+    tempGeo.setAttribute('position', new THREE.BufferAttribute(terrainPositions, 3));
+    tempGeo.computeBoundingBox();
     const center = new THREE.Vector3();
-    geo.boundingBox!.getCenter(center);
-    geo.translate(-center.x, -center.y, -center.z);
+    tempGeo.boundingBox!.getCenter(center);
+    tempGeo.dispose();
 
-    return geo;
-  }, [elevationData, modelWidth, verticalScale, baseHeight]);
+    const tGeo = trianglesToBufferGeometry(terrainTriangles, center);
+
+    let bGeo: THREE.BufferGeometry | null = null;
+    let rGeo: THREE.BufferGeometry | null = null;
+
+    if (bounds) {
+      const featureOpts = {
+        width: modelWidth,
+        depth: modelWidth,
+        baseHeight,
+        verticalScale,
+      };
+
+      const buildingFeatures = buildings ?? [];
+      const roadFeatures = roads ?? [];
+
+      if (buildingFeatures.length > 0) {
+        const buildingTriangles = buildFeatureMesh(buildingFeatures, [], bounds, elevationData, featureOpts);
+        if (buildingTriangles.length > 0) {
+          bGeo = trianglesToBufferGeometry(buildingTriangles, center);
+        }
+      }
+
+      if (roadFeatures.length > 0) {
+        const roadTriangles = buildFeatureMesh([], roadFeatures, bounds, elevationData, featureOpts);
+        if (roadTriangles.length > 0) {
+          rGeo = trianglesToBufferGeometry(roadTriangles, center);
+        }
+      }
+    }
+
+    return { terrainGeo: tGeo, buildingGeo: bGeo, roadGeo: rGeo };
+  }, [elevationData, modelWidth, verticalScale, baseHeight, buildings, roads, bounds]);
 
   return (
-    <mesh geometry={geometry}>
-      <meshStandardMaterial color="#4ade80" flatShading />
-    </mesh>
+    <group>
+      <mesh geometry={terrainGeo}>
+        <meshStandardMaterial color="#4ade80" flatShading />
+      </mesh>
+      {buildingGeo && (
+        <mesh geometry={buildingGeo}>
+          <meshStandardMaterial color="#94a3b8" flatShading />
+        </mesh>
+      )}
+      {roadGeo && (
+        <mesh geometry={roadGeo}>
+          <meshStandardMaterial color="#64748b" flatShading />
+        </mesh>
+      )}
+    </group>
   );
 }
 

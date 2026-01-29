@@ -27,9 +27,13 @@ function HomePage() {
   const [verticalScale, setVerticalScale] = useState(1.5);
   const [baseHeight, setBaseHeight] = useState(2);
   const [mapboxToken, setMapboxToken] = useState(getStoredMapboxToken);
+  const [showBuildings, setShowBuildings] = useState(false);
+  const [showRoads, setShowRoads] = useState(false);
 
   const {
     data: elevationData,
+    buildings,
+    roads,
     isLoading: isFetchingElevation,
     error: elevationError,
     progress: fetchProgress,
@@ -40,15 +44,19 @@ function HomePage() {
 
   const handleFetchElevation = useCallback(() => {
     if (bounds && mapboxToken) {
-      fetchElevation(bounds, gridSize, mapboxToken);
+      fetchElevation(bounds, gridSize, mapboxToken, showBuildings, showRoads);
     }
-  }, [bounds, gridSize, mapboxToken, fetchElevation]);
+  }, [bounds, gridSize, mapboxToken, showBuildings, showRoads, fetchElevation]);
 
   const handleDownloadSTL = useCallback(() => {
     if (elevationData) {
-      generate(elevationData, { width: modelWidth, verticalScale, baseHeight });
+      generate(
+        elevationData,
+        { width: modelWidth, verticalScale, baseHeight },
+        { buildings, roads, bounds, elevationGrid: elevationData },
+      );
     }
-  }, [elevationData, modelWidth, verticalScale, baseHeight, generate]);
+  }, [elevationData, modelWidth, verticalScale, baseHeight, buildings, roads, bounds, generate]);
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 p-6 max-w-[1600px] mx-auto">
@@ -109,6 +117,10 @@ function HomePage() {
             onVerticalScaleChange={setVerticalScale}
             baseHeight={baseHeight}
             onBaseHeightChange={setBaseHeight}
+            showBuildings={showBuildings}
+            onShowBuildingsChange={setShowBuildings}
+            showRoads={showRoads}
+            onShowRoadsChange={setShowRoads}
           />
         </div>
 
@@ -141,6 +153,9 @@ function HomePage() {
                 modelWidth={modelWidth}
                 verticalScale={verticalScale}
                 baseHeight={baseHeight}
+                buildings={buildings}
+                roads={roads}
+                bounds={bounds}
               />
             </div>
           </div>
